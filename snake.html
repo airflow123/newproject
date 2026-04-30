@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snake Game</title>
+  <style>
+    body { background: #222; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    canvas { background: #000; border: 2px solid #0f0; margin-bottom: 20px; }
+    #restart { padding: 10px 30px; font-size: 18px; background: #0f0; color: #000; border: none; cursor: pointer; }
+    #restart:hover { background: #0a0; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="400" height="400"></canvas>
+  <button id="restart" onclick="restart()">Restart</button>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const grid = 20;
+    let snake = [{x: 200, y: 200}, {x: 180, y: 200}, {x: 160, y: 200}];
+    let food = {x: 80, y: 80};
+    let dx = grid, dy = 0;
+    let score = 0;
+    let gameOver = false;
+    let gameLoop;
+
+    function draw() {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0f0";
+      snake.forEach((p, i) => ctx.fillRect(p.x, p.y, grid-2, grid-2));
+      ctx.fillStyle = "#f00";
+      ctx.fillRect(food.x, food.y, grid-2, grid-2);
+      ctx.fillStyle = "#fff";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 25);
+    }
+
+    function restart() {
+      clearInterval(gameLoop);
+      snake = [{x: 200, y: 200}, {x: 180, y: 200}, {x: 160, y: 200}];
+      dx = grid; dy = 0; score = 0;
+      gameOver = false;
+      food = {x: Math.floor(Math.random() * 20) * grid, y: Math.floor(Math.random() * 20) * grid};
+      draw();
+      gameLoop = setInterval(() => { move(); draw(); }, 100);
+    }
+
+    function move() {
+      if (gameOver) return;
+      head = {x: snake[0].x + dx, y: snake[0].y + dy};
+      if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height || snake.some(p => p.x === head.x && p.y === head.y)) {
+        gameOver = true;
+        ctx.fillStyle = "#fff";
+        ctx.font = "40px Arial";
+        ctx.fillText("Game Over!", 100, 200);
+        ctx.font = "20px Arial";
+        ctx.fillText("Score: " + score, 150, 240);
+        ctx.fillText("Press Restart to play again", 80, 280);
+        return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        food = {x: Math.floor(Math.random() * 20) * grid, y: Math.floor(Math.random() * 20) * grid};
+      } else {
+        snake.pop();
+      }
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -grid; }
+      else if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = grid; }
+      else if (e.key === "ArrowLeft" && dx === 0) { dx = -grid; dy = 0; }
+      else if (e.key === "ArrowRight" && dx === 0) { dx = grid; dy = 0; }
+    });
+
+gameLoop = setInterval(() => { move(); draw(); }, 100);
+    draw();
+  </script>
+</body>
+</html>
